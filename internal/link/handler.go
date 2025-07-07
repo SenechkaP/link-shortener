@@ -1,13 +1,24 @@
 package link
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
-type LinkHandler struct{}
+type LinkHandlerDeps struct {
+	LinkRepository *LinkRepository
+}
 
-func NewLinkHabdler(router *http.ServeMux) {
-	handler := &LinkHandler{}
-	router.HandleFunc("GET /{alias}", handler.getLink())
-	router.HandleFunc("POST /link", handler.postLink())
+type LinkHandler struct {
+	LinkRepository *LinkRepository
+}
+
+func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
+	handler := &LinkHandler{
+		LinkRepository: deps.LinkRepository,
+	}
+	router.HandleFunc("GET /{hash}", handler.getLink())
+	router.HandleFunc("POST /link", handler.createLink())
 	router.HandleFunc("PATCH /link/{id}", handler.patchLink())
 	router.HandleFunc("DELETE /link/{id}", handler.deleteLink())
 
@@ -19,7 +30,7 @@ func (handler *LinkHandler) getLink() http.HandlerFunc {
 	}
 }
 
-func (handler *LinkHandler) postLink() http.HandlerFunc {
+func (handler *LinkHandler) createLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
 
 	}
@@ -27,7 +38,8 @@ func (handler *LinkHandler) postLink() http.HandlerFunc {
 
 func (handler *LinkHandler) patchLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
-
+		id := q.PathValue("id")
+		fmt.Println(id)
 	}
 }
 
