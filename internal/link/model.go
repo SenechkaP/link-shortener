@@ -15,7 +15,7 @@ type Link struct {
 func NewLink(url_str string) *Link {
 	return &Link{
 		Url:  url_str,
-		Hash: getRandomHash(10),
+		Hash: getRandomHash(5),
 	}
 }
 
