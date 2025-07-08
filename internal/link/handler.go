@@ -19,15 +19,22 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
 	}
-	router.HandleFunc("GET /{hash}", handler.getLink())
+	router.HandleFunc("GET /{hash}", handler.goTo())
 	router.HandleFunc("POST /link", handler.createLink())
 	router.HandleFunc("PATCH /link/{id}", handler.patchLink())
 	router.HandleFunc("DELETE /link/{id}", handler.deleteLink())
 
 }
 
-func (handler *LinkHandler) getLink() http.HandlerFunc {
+func (handler *LinkHandler) goTo() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
+		hash := q.PathValue("hash")
+		link, err := handler.LinkRepository.GetByHash(hash)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, q, link.Url, http.StatusTemporaryRedirect)
 	}
 }
 
@@ -35,15 +42,16 @@ func (handler *LinkHandler) createLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
 		body, err := req.HandleBody[LinkCreateRequest](q)
 		if err != nil {
-			res.JsonDump(w, err.Error(), 402)
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		link := NewLink(body.Url)
+		link := NewLink(body.Url, handler.LinkRepository)
 		createdLink, err := handler.LinkRepository.Create(link)
 		if err != nil {
-			res.JsonDump(w, err.Error(), 500)
+			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		res.JsonDump(w, createdLink, 201)
+		res.JsonDump(w, createdLink, http.StatusCreated)
 	}
 }
 

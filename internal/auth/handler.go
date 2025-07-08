@@ -26,10 +26,10 @@ func (handler *AuthHandler) login() http.HandlerFunc {
 
 		body, err := req.HandleBody[LoginRequest](q)
 		if err != nil {
-			res.JsonDump(w, err.Error(), 402)
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res.JsonDump(w, body, 201)
+		res.JsonDump(w, body, http.StatusOK)
 	}
 }
 
@@ -37,9 +37,9 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
 		body, err := req.HandleBody[RegistrateRequest](q)
 		if err != nil {
-			res.JsonDump(w, err.Error(), 402)
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res.JsonDump(w, body, 201)
+		res.JsonDump(w, body, http.StatusCreated)
 	}
 }
