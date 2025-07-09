@@ -3,8 +3,11 @@ package link
 import (
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
-	"fmt"
+	"errors"
 	"net/http"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct {
@@ -21,7 +24,7 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	}
 	router.HandleFunc("GET /{hash}", handler.goTo())
 	router.HandleFunc("POST /link", handler.createLink())
-	router.HandleFunc("PATCH /link/{id}", handler.patchLink())
+	router.HandleFunc("PATCH /link/{id}", handler.updateLink())
 	router.HandleFunc("DELETE /link/{id}", handler.deleteLink())
 
 }
@@ -55,10 +58,39 @@ func (handler *LinkHandler) createLink() http.HandlerFunc {
 	}
 }
 
-func (handler *LinkHandler) patchLink() http.HandlerFunc {
+func (handler *LinkHandler) updateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
-		id := q.PathValue("id")
-		fmt.Println(id)
+		body, err := req.HandleBody[LinkUpdateRequest](q)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		idString := q.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if link, _ := handler.LinkRepository.GetByHash(body.Hash); link != nil {
+			res.JsonDump(w, "Link with this hash is already existing", http.StatusBadRequest)
+			return
+		}
+
+		updatedLink, err := handler.LinkRepository.Update(&Link{
+			Model: gorm.Model{ID: uint(id)},
+			Url:   body.Url,
+			Hash:  body.Hash,
+		})
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
+			} else {
+				res.JsonDump(w, err.Error(), http.StatusBadRequest)
+			}
+			return
+		}
+		res.JsonDump(w, updatedLink, http.StatusOK)
 	}
 }
 
