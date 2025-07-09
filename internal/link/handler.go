@@ -3,7 +3,6 @@ package link
 import (
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -71,6 +70,10 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
+			res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
+			return
+		}
 		if link, _ := handler.LinkRepository.GetByHash(body.Hash); link != nil {
 			res.JsonDump(w, "Link with this hash is already existing", http.StatusBadRequest)
 			return
@@ -83,11 +86,7 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 		})
 
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
-			} else {
-				res.JsonDump(w, err.Error(), http.StatusBadRequest)
-			}
+			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		res.JsonDump(w, updatedLink, http.StatusOK)
@@ -96,6 +95,19 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 
 func (handler *LinkHandler) deleteLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
-
+		idString := q.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
+			res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
+			return
+		}
+		err = handler.LinkRepository.Delete(uint(id))
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }

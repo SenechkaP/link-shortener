@@ -3,7 +3,6 @@ package link
 import (
 	"advpractice/pkg/db"
 
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -34,13 +33,27 @@ func (repo *LinkRepository) GetByHash(hash string) (*Link, error) {
 	return &link, nil
 }
 
+func (repo *LinkRepository) GetByID(id uint) (*Link, error) {
+	var link Link
+	result := repo.Database.First(&link, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &link, nil
+}
+
 func (repo *LinkRepository) Update(link *Link) (*Link, error) {
 	result := repo.Database.Clauses(clause.Returning{}).Updates(link)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	if result.RowsAffected == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
 	return link, nil
+}
+
+func (repo *LinkRepository) Delete(id uint) error {
+	result := repo.Database.Delete(&Link{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
