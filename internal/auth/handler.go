@@ -30,12 +30,20 @@ func (handler *AuthHandler) login() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		token, err := handler.AuthService.login(body)
+
+		err = handler.AuthService.login(body)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		res.JsonDump(w, token, http.StatusOK)
+
+		token, err := handler.AuthService.getJWT(body.Email, handler.Config.Auth.Secret)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.JsonDump(w, TokenResponse{token}, http.StatusOK)
 	}
 }
 
@@ -46,15 +54,27 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		userEmail, err := handler.AuthService.register(body)
+
+		err = handler.AuthService.register(body)
 		if err != nil {
 			if err.Error() == ErrUserExists {
 				res.JsonDump(w, err.Error(), http.StatusConflict)
 				return
 			}
+			if err.Error() == ErrWrongPassword {
+				res.JsonDump(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		res.JsonDump(w, map[string]string{"email": userEmail}, http.StatusOK)
+
+		token, err := handler.AuthService.getJWT(body.Email, handler.Config.Auth.Secret)
+		if err != nil {
+			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res.JsonDump(w, TokenResponse{token}, http.StatusOK)
 	}
 }
