@@ -3,6 +3,8 @@ package auth
 import (
 	"advpractice/internal/user"
 	"errors"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
@@ -19,13 +21,18 @@ func (service *AuthService) register(data *RegistrateRequest) (string, error) {
 		return "", errors.New(ErrUserExists)
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
 	user := &user.User{
 		Name:     data.Name,
-		Password: "", // Mock
+		Password: string(hashedPassword),
 		Email:    data.Email,
 	}
 
-	_, err := service.UserRepository.Create(user)
+	_, err = service.UserRepository.Create(user)
 	if err != nil {
 		return "", err
 	}
