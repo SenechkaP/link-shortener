@@ -15,6 +15,20 @@ func NewAuthService(userRepository *user.UserRepository) *AuthService {
 	return &AuthService{userRepository}
 }
 
+func (service *AuthService) login(data *LoginRequest) (string, error) {
+	user, err := service.UserRepository.GetByEmail(data.Email)
+	if err != nil {
+		return "", errors.New(ErrNonExistentEmail)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+	if err != nil {
+		return "", errors.New(ErrWrongPassword)
+	}
+
+	return "this is token =)", nil
+}
+
 func (service *AuthService) register(data *RegistrateRequest) (string, error) {
 	existingUser, _ := service.UserRepository.GetByEmail(data.Email)
 	if existingUser != nil {
