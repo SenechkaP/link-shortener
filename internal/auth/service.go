@@ -54,9 +54,9 @@ func (service *AuthService) register(data *RegistrateRequest) error {
 	return nil
 }
 
-func (service *AuthService) getJWT(email string, secret string) (string, error) {
+func (service *AuthService) getJWT(data jwt.JWTData, secret string) (string, error) {
 	j := jwt.NewJWT(secret)
-	token, err := j.Create(email)
+	token, err := j.Create(data)
 	if err != nil {
 		return "", errors.New(ErrJWT)
 	}

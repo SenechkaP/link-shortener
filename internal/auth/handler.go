@@ -2,6 +2,7 @@ package auth
 
 import (
 	"advpractice/configs"
+	"advpractice/pkg/jwt"
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
 	"net/http"
@@ -37,7 +38,7 @@ func (handler *AuthHandler) login() http.HandlerFunc {
 			return
 		}
 
-		token, err := handler.AuthService.getJWT(body.Email, handler.Config.Auth.Secret)
+		token, err := handler.AuthService.getJWT(jwt.JWTData{Email: body.Email}, handler.Config.Auth.Secret)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -69,7 +70,7 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 			return
 		}
 
-		token, err := handler.AuthService.getJWT(body.Email, handler.Config.Auth.Secret)
+		token, err := handler.AuthService.getJWT(jwt.JWTData{Email: body.Email}, handler.Config.Auth.Secret)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return

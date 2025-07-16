@@ -24,11 +24,11 @@ func main() {
 
 	// Handlers
 	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{Config: conf, AuthService: authService})
-	link.NewLinkHandler(router, &link.LinkHandlerDeps{LinkRepository: linkRepository})
+	link.NewLinkHandler(router, &link.LinkHandlerDeps{LinkRepository: linkRepository, Config: conf})
 
 	// Middlewares
 	stack := middleware.Chain(
-		// middleware.Bearer,
+		// middleware.IsAuthed,
 		middleware.CORS,
 		middleware.Logging,
 	)
