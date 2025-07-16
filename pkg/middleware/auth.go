@@ -13,18 +13,23 @@ type key string
 
 const ContextEmailKey key = "ContextEmailKey"
 
+const (
+	ErrEmptyToken   = "TOKEN IS EMPTY"
+	ErrInvalidToken = "TOKEN IS NOT VALID"
+)
+
 func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		if token == authHeader {
-			res.JsonDump(w, "TOKEN IS EMPTY", http.StatusUnauthorized)
+			res.JsonDump(w, ErrEmptyToken, http.StatusUnauthorized)
 			return
 		}
 
 		isValid, data := jwt.NewJWT(config.Auth.Secret).Parse(token)
 		if !isValid {
-			res.JsonDump(w, "TOKEN IS NOT VALID", http.StatusUnauthorized)
+			res.JsonDump(w, ErrInvalidToken, http.StatusUnauthorized)
 			return
 		}
 

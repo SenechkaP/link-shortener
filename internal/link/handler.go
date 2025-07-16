@@ -12,6 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	ErrNonExistingLinkID   = "LINK WITH THIS ID IS NOT FOUND"
+	ErrAlreadyExistingHash = "LINK WITH THIS HASH IS ALREADY EXISTING"
+)
+
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
 	Config         *configs.Config
@@ -80,11 +85,11 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 		}
 
 		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
-			res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
+			res.JsonDump(w, ErrNonExistingLinkID, http.StatusNotFound)
 			return
 		}
 		if link, _ := handler.LinkRepository.GetByHash(body.Hash); link != nil {
-			res.JsonDump(w, "Link with this hash is already existing", http.StatusBadRequest)
+			res.JsonDump(w, ErrAlreadyExistingHash, http.StatusBadRequest)
 			return
 		}
 
@@ -111,7 +116,7 @@ func (handler *LinkHandler) deleteLink() http.HandlerFunc {
 			return
 		}
 		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
-			res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
+			res.JsonDump(w, ErrNonExistingLinkID, http.StatusNotFound)
 			return
 		}
 		err = handler.LinkRepository.Delete(uint(id))
