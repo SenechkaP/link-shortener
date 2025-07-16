@@ -5,6 +5,7 @@ import (
 	"advpractice/pkg/middleware"
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -67,12 +68,17 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		userEmail := q.Context().Value(middleware.ContextEmailKey).(string)
+		log.Println(userEmail)
+
 		idString := q.PathValue("id")
 		id, err := strconv.ParseUint(idString, 10, 64)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
 		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
 			res.JsonDump(w, "Link with this ID is not found", http.StatusNotFound)
 			return
