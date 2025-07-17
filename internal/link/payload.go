@@ -8,3 +8,8 @@ type LinkUpdateRequest struct {
 	Url  string `json:"url" validate:"required,url"`
 	Hash string `json:"hash" validate:"omitempty,alpha,len=5"`
 }
+
+type AllLinksResponce struct {
+	Count int64  `json:"count"`
+	Links []Link `json:"links"`
+}

@@ -15,6 +15,7 @@ import (
 const (
 	ErrNonExistingLinkID   = "LINK WITH THIS ID IS NOT FOUND"
 	ErrAlreadyExistingHash = "LINK WITH THIS HASH IS ALREADY EXISTING"
+	ErrQueryParams         = "INVALID QUERY PARAMETERS"
 )
 
 type LinkHandlerDeps struct {
@@ -34,7 +35,7 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	router.HandleFunc("POST /link", handler.createLink())
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.updateLink(), deps.Config))
 	router.HandleFunc("DELETE /link/{id}", handler.deleteLink())
-
+	router.HandleFunc("GET /link", handler.getAllLinks())
 }
 
 func (handler *LinkHandler) goTo() http.HandlerFunc {
@@ -123,5 +124,19 @@ func (handler *LinkHandler) deleteLink() http.HandlerFunc {
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 		}
+	}
+}
+
+func (handler *LinkHandler) getAllLinks() http.HandlerFunc {
+	return func(w http.ResponseWriter, q *http.Request) {
+		limit, errLimit := strconv.Atoi(q.URL.Query().Get("limit"))
+		offset, errOffset := strconv.Atoi(q.URL.Query().Get("offset"))
+		if errLimit != nil || errOffset != nil {
+			res.JsonDump(w, ErrQueryParams, http.StatusBadRequest)
+			return
+		}
+		count := handler.LinkRepository.Count()
+		links := handler.LinkRepository.GetAll(limit, offset)
+		res.JsonDump(w, AllLinksResponce{count, links}, http.StatusOK)
 	}
 }
