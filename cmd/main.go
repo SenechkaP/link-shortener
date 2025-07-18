@@ -4,6 +4,7 @@ import (
 	"advpractice/configs"
 	"advpractice/internal/auth"
 	"advpractice/internal/link"
+	"advpractice/internal/stat"
 	"advpractice/internal/user"
 	"advpractice/pkg/db"
 	"advpractice/pkg/middleware"
@@ -18,13 +19,21 @@ func main() {
 	// Repositories
 	linkRepository := link.NewLinkRepository(database)
 	userRepository := user.NewUserRepository(database)
+	statPerository := stat.NewStatRepository(database)
 
 	//Services
 	authService := auth.NewAuthService(userRepository)
 
 	// Handlers
-	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{Config: conf, AuthService: authService})
-	link.NewLinkHandler(router, &link.LinkHandlerDeps{LinkRepository: linkRepository, Config: conf})
+	auth.NewAuthHandler(router, &auth.AuthHandlerDeps{
+		Config:      conf,
+		AuthService: authService,
+	})
+	link.NewLinkHandler(router, &link.LinkHandlerDeps{
+		LinkRepository: linkRepository,
+		StatRepository: statPerository,
+		Config:         conf,
+	})
 
 	// Middlewares
 	stack := middleware.Chain(
