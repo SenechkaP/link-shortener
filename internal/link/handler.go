@@ -2,7 +2,7 @@ package link
 
 import (
 	"advpractice/configs"
-	"advpractice/pkg/di"
+	"advpractice/pkg/event"
 	"advpractice/pkg/middleware"
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
@@ -21,19 +21,19 @@ const (
 
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
 	Config         *configs.Config
+	EventBus       *event.EventBus
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
+	EventBus       *event.EventBus
 }
 
 func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
-		StatRepository: deps.StatRepository,
+		EventBus:       deps.EventBus,
 	}
 	router.HandleFunc("GET /{hash}", handler.goTo())
 	router.HandleFunc("POST /link", handler.createLink())
@@ -50,7 +50,10 @@ func (handler *LinkHandler) goTo() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		handler.StatRepository.AddClick(link.ID)
+		go handler.EventBus.Publish(event.Event{
+			Type: event.EventLinkVisited,
+			Data: link.ID,
+		})
 		http.Redirect(w, q, link.Url, http.StatusTemporaryRedirect)
 	}
 }
