@@ -34,7 +34,7 @@ func (handler *AuthHandler) login() http.HandlerFunc {
 
 		err = handler.AuthService.login(body)
 		if err != nil {
-			res.JsonDump(w, err.Error(), http.StatusBadRequest)
+			res.JsonDump(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
