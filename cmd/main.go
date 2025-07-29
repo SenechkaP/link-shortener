@@ -18,8 +18,8 @@ import (
 	"time"
 )
 
-func main() {
-	conf := configs.LoadConfig()
+func App(ctx context.Context, envPath string) http.Handler {
+	conf := configs.LoadConfig(envPath)
 	database := db.NewDb(conf)
 	router := http.NewServeMux()
 	eventBus := event.NewEventBus()
@@ -52,20 +52,23 @@ func main() {
 
 	// Middlewares
 	stack := middleware.Chain(
-		// middleware.IsAuthed,
 		middleware.CORS,
 		middleware.Logging,
 	)
 
-	server := http.Server{
-		Addr:    ":8081",
-		Handler: stack(router),
-	}
+	go statService.AddClick(ctx)
 
+	return stack(router)
+}
+
+func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go statService.AddClick(ctx)
+	server := http.Server{
+		Addr:    ":8081",
+		Handler: App(ctx, ".env"),
+	}
 
 	go func() {
 		sigint := make(chan os.Signal, 1)
