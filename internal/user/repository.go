@@ -12,12 +12,12 @@ func NewUserRepository(database *db.Db) *UserRepository {
 	}
 }
 
-func (repo *UserRepository) Create(link *User) (*User, error) {
-	result := repo.Database.Create(link)
+func (repo *UserRepository) Create(user *User) (*User, error) {
+	result := repo.Database.Create(user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return link, nil
+	return user, nil
 }
 
 func (repo *UserRepository) GetByEmail(email string) (*User, error) {

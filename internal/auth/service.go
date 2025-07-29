@@ -2,6 +2,7 @@ package auth
 
 import (
 	"advpractice/internal/user"
+	"advpractice/pkg/di"
 	"advpractice/pkg/jwt"
 	"errors"
 
@@ -9,10 +10,10 @@ import (
 )
 
 type AuthService struct {
-	UserRepository *user.UserRepository
+	UserRepository di.IUserRepository
 }
 
-func NewAuthService(userRepository *user.UserRepository) *AuthService {
+func NewAuthService(userRepository di.IUserRepository) *AuthService {
 	return &AuthService{userRepository}
 }
 
