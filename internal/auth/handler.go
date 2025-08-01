@@ -76,6 +76,6 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 			return
 		}
 
-		res.JsonDump(w, TokenResponse{token}, http.StatusOK)
+		res.JsonDump(w, TokenResponse{token}, http.StatusCreated)
 	}
 }
