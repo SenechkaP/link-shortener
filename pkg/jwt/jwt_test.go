@@ -20,10 +20,10 @@ func getSecret() string {
 }
 
 func TestJWTCreate(t *testing.T) {
-	const email = "test@test.test"
+	const userId uint = 1
 	jwtService := jwt.NewJWT(getSecret())
 	token, err := jwtService.Create(jwt.JWTData{
-		Email: email,
+		UserId: userId,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,7 @@ func TestJWTCreate(t *testing.T) {
 	if !isValid {
 		t.Fatal("Invalid token")
 	}
-	if data.Email != email {
-		t.Fatalf("Email %s not equal to %s", data.Email, email)
+	if data.UserId != userId {
+		t.Fatalf("UserId %d not equal to %d", data.UserId, userId)
 	}
 }

@@ -3,7 +3,7 @@ package jwt
 import "github.com/golang-jwt/jwt/v5"
 
 type JWTData struct {
-	Email string
+	UserId uint
 }
 
 type JWT struct {
@@ -16,7 +16,7 @@ func NewJWT(secret string) *JWT {
 
 func (j *JWT) Create(data JWTData) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": data.Email,
+		"userId": data.UserId,
 	})
 	s, err := t.SignedString([]byte(j.Secret))
 	if err != nil {
@@ -32,7 +32,7 @@ func (j *JWT) Parse(token string) (bool, *JWTData) {
 	if err != nil {
 		return false, nil
 	}
-	email := t.Claims.(jwt.MapClaims)["email"]
+	userId := t.Claims.(jwt.MapClaims)["userId"]
 
-	return t.Valid, &JWTData{Email: email.(string)}
+	return t.Valid, &JWTData{UserId: userId.(uint)}
 }
