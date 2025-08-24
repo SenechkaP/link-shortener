@@ -11,7 +11,7 @@ import (
 
 type key string
 
-const ContextEmailKey key = "ContextEmailKey"
+const ContextUserIdKey key = "ContextUserIdKey"
 
 const (
 	ErrEmptyToken   = "TOKEN IS EMPTY"
@@ -33,7 +33,7 @@ func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ContextEmailKey, data.Email)
+		ctx := context.WithValue(r.Context(), ContextUserIdKey, data.UserId)
 		newReq := r.WithContext(ctx)
 		next.ServeHTTP(w, newReq)
 	})

@@ -6,7 +6,6 @@ import (
 	"advpractice/pkg/middleware"
 	"advpractice/pkg/req"
 	"advpractice/pkg/res"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -83,8 +82,7 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 			return
 		}
 
-		userEmail := q.Context().Value(middleware.ContextEmailKey).(string)
-		log.Println(userEmail)
+		// userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
 
 		idString := q.PathValue("id")
 		id, err := strconv.ParseUint(idString, 10, 64)

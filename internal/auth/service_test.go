@@ -17,7 +17,7 @@ func (*MockUserRepository) GetByEmail(string) (*user.User, error) {
 
 func TestRegisterSuccess(t *testing.T) {
 	authService := NewAuthService(&MockUserRepository{})
-	err := authService.register(&RegistrateRequest{
+	_, err := authService.register(&RegistrateRequest{
 		Name:     "test",
 		Email:    "test@test.test",
 		Password: "testpassword",

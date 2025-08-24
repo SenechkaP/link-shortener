@@ -32,13 +32,13 @@ func (handler *AuthHandler) login() http.HandlerFunc {
 			return
 		}
 
-		err = handler.AuthService.login(body)
+		userId, err := handler.AuthService.login(body)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		token, err := handler.AuthService.getJWT(jwt.JWTData{Email: body.Email}, handler.Config.Auth.Secret)
+		token, err := handler.AuthService.getJWT(jwt.JWTData{UserId: *userId}, handler.Config.Auth.Secret)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -56,7 +56,7 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 			return
 		}
 
-		err = handler.AuthService.register(body)
+		userId, err := handler.AuthService.register(body)
 		if err != nil {
 			if err.Error() == ErrUserExists {
 				res.JsonDump(w, err.Error(), http.StatusConflict)
@@ -70,7 +70,7 @@ func (handler *AuthHandler) register() http.HandlerFunc {
 			return
 		}
 
-		token, err := handler.AuthService.getJWT(jwt.JWTData{Email: body.Email}, handler.Config.Auth.Secret)
+		token, err := handler.AuthService.getJWT(jwt.JWTData{UserId: *userId}, handler.Config.Auth.Secret)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
 			return

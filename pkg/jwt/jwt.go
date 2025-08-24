@@ -32,7 +32,12 @@ func (j *JWT) Parse(token string) (bool, *JWTData) {
 	if err != nil {
 		return false, nil
 	}
-	userId := t.Claims.(jwt.MapClaims)["userId"]
 
-	return t.Valid, &JWTData{UserId: userId.(uint)}
+	claims := t.Claims.(jwt.MapClaims)
+	userIdFloat, ok := claims["userId"].(float64)
+	if !ok {
+		return false, nil
+	}
+
+	return t.Valid, &JWTData{UserId: uint(userIdFloat)}
 }
