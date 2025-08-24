@@ -118,8 +118,8 @@ func TestRegisterSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.StatusCode != 200 {
-		t.Fatalf("Expected %d got %d", 200, res.StatusCode)
+	if res.StatusCode != 201 {
+		t.Fatalf("Expected %d got %d", 201, res.StatusCode)
 	}
 	var result auth.TokenResponse
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
