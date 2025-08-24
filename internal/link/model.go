@@ -9,9 +9,11 @@ import (
 
 type Link struct {
 	gorm.Model
-	Url   string      `json:"url"`
-	Hash  string      `json:"hash" gorm:"uniqueIndex"`
-	Stats []stat.Stat `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Url    string      `json:"url"`
+	Hash   string      `json:"hash" gorm:"uniqueIndex"`
+	UserID uint        `json:"userId"`
+	_      struct{}    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:UserID;references:ID"`
+	Stats  []stat.Stat `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 func NewLink(url_str string, linkRepo *LinkRepository) *Link {
