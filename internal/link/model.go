@@ -16,10 +16,11 @@ type Link struct {
 	Stats  []stat.Stat `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
-func NewLink(url_str string, linkRepo *LinkRepository) *Link {
+func NewLink(url_str string, userId uint, linkRepo *LinkRepository) *Link {
 	return &Link{
-		Url:  url_str,
-		Hash: generateUniqueHash(linkRepo),
+		Url:    url_str,
+		Hash:   generateUniqueHash(linkRepo),
+		UserID: userId,
 	}
 }
 

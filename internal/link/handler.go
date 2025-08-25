@@ -15,6 +15,7 @@ import (
 const (
 	ErrNonExistingLinkID   = "LINK WITH THIS ID IS NOT FOUND"
 	ErrAlreadyExistingHash = "LINK WITH THIS HASH IS ALREADY EXISTING"
+	ErrLinkEditNotAllowed  = "YOU ARE NOT THE CREATOR OF THIS LINK"
 	ErrQueryParams         = "INVALID QUERY PARAMETERS"
 )
 
@@ -35,9 +36,9 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 		EventBus:       deps.EventBus,
 	}
 	router.HandleFunc("GET /{hash}", handler.goTo())
-	router.HandleFunc("POST /link", handler.createLink())
+	router.Handle("POST /link", middleware.IsAuthed(handler.createLink(), deps.Config))
 	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.updateLink(), deps.Config))
-	router.HandleFunc("DELETE /link/{id}", handler.deleteLink())
+	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.deleteLink(), deps.Config))
 	router.HandleFunc("GET /link", handler.getAllLinks())
 }
 
@@ -64,7 +65,8 @@ func (handler *LinkHandler) createLink() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		link := NewLink(body.Url, handler.LinkRepository)
+		userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
+		link := NewLink(body.Url, userId, handler.LinkRepository)
 		createdLink, err := handler.LinkRepository.Create(link)
 		if err != nil {
 			res.JsonDump(w, err.Error(), http.StatusInternalServerError)
@@ -82,8 +84,7 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 			return
 		}
 
-		// userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
-
+		userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
 		idString := q.PathValue("id")
 		id, err := strconv.ParseUint(idString, 10, 64)
 		if err != nil {
@@ -91,8 +92,11 @@ func (handler *LinkHandler) updateLink() http.HandlerFunc {
 			return
 		}
 
-		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
+		if linkToUpdate, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
 			res.JsonDump(w, ErrNonExistingLinkID, http.StatusNotFound)
+			return
+		} else if linkToUpdate.UserID != userId {
+			res.JsonDump(w, ErrLinkEditNotAllowed, http.StatusForbidden)
 			return
 		}
 		if link, _ := handler.LinkRepository.GetByHash(body.Hash); link != nil {
@@ -122,8 +126,12 @@ func (handler *LinkHandler) deleteLink() http.HandlerFunc {
 			res.JsonDump(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if _, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
+		userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
+		if linkToDelete, err := handler.LinkRepository.GetByID(uint(id)); err != nil {
 			res.JsonDump(w, ErrNonExistingLinkID, http.StatusNotFound)
+			return
+		} else if linkToDelete.UserID != userId {
+			res.JsonDump(w, ErrLinkEditNotAllowed, http.StatusForbidden)
 			return
 		}
 		err = handler.LinkRepository.Delete(uint(id))
