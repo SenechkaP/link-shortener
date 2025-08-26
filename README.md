@@ -76,8 +76,7 @@ Response example:
             "DeletedAt": null,
             "url": "https://testlink.com",
             "hash": "wegsA",
-            "userId": 3,
-            "Stats": null
+            "userId": 3
         },
         {
             "ID": 7,
@@ -86,8 +85,7 @@ Response example:
             "DeletedAt": null,
             "url": "https://unknown.com",
             "hash": "RVNSb",
-            "userId": 3,
-            "Stats": null
+            "userId": 3
         }
     ]
 }
