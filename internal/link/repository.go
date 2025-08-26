@@ -58,10 +58,10 @@ func (repo *LinkRepository) Delete(id uint) error {
 	return nil
 }
 
-func (repo *LinkRepository) GetAll(limit, offset int) (links []Link) {
+func (repo *LinkRepository) GetAllByUserId(limit, offset int, userId uint) (links []Link) {
 	repo.Database.
 		Table("links").
-		Where("deleted_at is null").
+		Where("deleted_at is null AND user_id = ?", userId).
 		Order("id ASC").
 		Limit(limit).
 		Offset(offset).
@@ -69,10 +69,10 @@ func (repo *LinkRepository) GetAll(limit, offset int) (links []Link) {
 	return
 }
 
-func (repo *LinkRepository) Count() (count int64) {
+func (repo *LinkRepository) CountByUserId(userId uint) (count int64) {
 	repo.Database.
 		Table("links").
-		Where("deleted_at is null").
+		Where("deleted_at is null AND user_id = ?", userId).
 		Count(&count)
 	return
 }

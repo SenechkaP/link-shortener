@@ -36,10 +36,10 @@ func NewLinkHandler(router *http.ServeMux, deps *LinkHandlerDeps) {
 		EventBus:       deps.EventBus,
 	}
 	router.HandleFunc("GET /{hash}", handler.goTo())
-	router.Handle("POST /link", middleware.IsAuthed(handler.createLink(), deps.Config))
-	router.Handle("PATCH /link/{id}", middleware.IsAuthed(handler.updateLink(), deps.Config))
-	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.deleteLink(), deps.Config))
-	router.HandleFunc("GET /link", handler.getAllLinks())
+	router.Handle("POST /links", middleware.IsAuthed(handler.createLink(), deps.Config))
+	router.Handle("PATCH /links/{id}", middleware.IsAuthed(handler.updateLink(), deps.Config))
+	router.Handle("DELETE /links/{id}", middleware.IsAuthed(handler.deleteLink(), deps.Config))
+	router.Handle("GET /links", middleware.IsAuthed(handler.getUserLinks(), deps.Config))
 }
 
 func (handler *LinkHandler) goTo() http.HandlerFunc {
@@ -141,7 +141,7 @@ func (handler *LinkHandler) deleteLink() http.HandlerFunc {
 	}
 }
 
-func (handler *LinkHandler) getAllLinks() http.HandlerFunc {
+func (handler *LinkHandler) getUserLinks() http.HandlerFunc {
 	return func(w http.ResponseWriter, q *http.Request) {
 		limit, errLimit := strconv.Atoi(q.URL.Query().Get("limit"))
 		offset, errOffset := strconv.Atoi(q.URL.Query().Get("offset"))
@@ -149,8 +149,9 @@ func (handler *LinkHandler) getAllLinks() http.HandlerFunc {
 			res.JsonDump(w, ErrQueryParams, http.StatusBadRequest)
 			return
 		}
-		count := handler.LinkRepository.Count()
-		links := handler.LinkRepository.GetAll(limit, offset)
+		userId := q.Context().Value(middleware.ContextUserIdKey).(uint)
+		count := handler.LinkRepository.CountByUserId(userId)
+		links := handler.LinkRepository.GetAllByUserId(limit, offset, userId)
 		res.JsonDump(w, AllLinksResponce{count, links}, http.StatusOK)
 	}
 }
