@@ -28,7 +28,7 @@ func NewStatHandler(router *http.ServeMux, deps *StatHandlerDeps) {
 	handler := &StatHandler{
 		StatRepository: deps.StatRepository,
 	}
-	router.HandleFunc("GET /stat", handler.getStat())
+	router.HandleFunc("GET /stats", handler.getStat())
 }
 
 func (handler *StatHandler) getStat() http.HandlerFunc {
